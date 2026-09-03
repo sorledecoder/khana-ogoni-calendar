@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f5f8b"><meta name="description" content="30-year Native Day Calendar">
+<link rel="manifest" href="manifest.webmanifest"><title>Native Calendar</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial;background:#eef2f5;color:#17212b}.app{max-width:760px;margin:auto;min-height:100vh;background:#fff}
+header{background:#1f5f8b;color:#fff;padding:18px 15px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0002}h1{margin:0 0 4px;font-size:23px}.range{font-size:12px;opacity:.9}
+.controls{display:grid;grid-template-columns:48px 1fr 48px;gap:7px;margin-top:14px}button,select{border:0;border-radius:10px;padding:12px;font-size:15px}button{background:#fff;color:#1f5f8b;font-weight:700}.nav{font-size:24px;padding:6px}select{width:100%;background:#eaf1f5;color:#17212b}.today{width:100%;margin-top:8px;background:#123c59;color:#fff}
+.calendar{padding:14px}.month{text-align:center;font-size:21px;font-weight:800;margin:2px 0 13px}.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.weekdays div{text-align:center;font-size:11px;font-weight:700;color:#64727d;padding:6px 0}
+.day{min-height:78px;border:1px solid #dfe5e9;border-radius:9px;padding:6px 3px;background:#fff}.empty{background:#f7f9fa;border-color:transparent}.num{text-align:center;font-size:17px;font-weight:800}.native{text-align:center;margin-top:6px;font-size:10.5px;font-weight:800;line-height:1.15}.todayDate{border:2px solid #1f5f8b;background:#edf7fc}.todayDate .num{color:#1f5f8b}
+.note{margin:2px 14px 18px;padding:13px;border-radius:10px;background:#eef5f9;font-size:13px;line-height:1.5}footer{text-align:center;padding:20px;color:#71808a;font-size:12px}@media(max-width:420px){.day{min-height:68px}.native{font-size:9.5px}}
+</style></head><body><div class="app"><header><h1>Native Calendar</h1>
+<div class="range">30 years • 28 Aug 2026 – 27 Aug 2056 • Offline capable</div>
+<div class="controls"><button class="nav" onclick="move(-1)">‹</button><select id="month" onchange="pick()"></select><button class="nav" onclick="move(1)">›</button></div>
+<button class="today" onclick="today()">Go to Today</button></header><main class="calendar"><div id="title" class="month"></div>
+<div class="weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="days" class="days"></div></main>
+<div class="note"><b>Native rotation:</b> Deemua → Deebom → Deezia → Deesor → Deekor → repeat.<br>Starting point: <b>Friday, 28 August 2026 = Deemua</b>.</div><footer>Native Calendar • No account required</footer></div>
+<script>
+const START=new Date(2026,7,28),END=new Date(2056,7,27),names=["Deemua","Deebom","Deezia","Deesor","Deekor"];let nowForStart=new Date(); nowForStart.setHours(0,0,0,0); let current=nowForStart<START?new Date(2026,7,1):nowForStart>END?new Date(2056,7,1):new Date(nowForStart.getFullYear(),nowForStart.getMonth(),1);
+function diff(a,b){return Math.floor((Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())-Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()))/86400000)}
+function nativeName(d){return names[((diff(d,START)%5)+5)%5]}function allowed(d){return d>=START&&d<=END}
+function setup(){let s=document.getElementById("month"),d=new Date(2026,7,1),last=new Date(2056,7,1);while(d<=last){let o=document.createElement("option");o.value=d.getFullYear()+"-"+d.getMonth();o.textContent=d.toLocaleString(undefined,{month:"long",year:"numeric"});s.appendChild(o);d.setMonth(d.getMonth()+1)}}
+function render(){document.getElementById("title").textContent=current.toLocaleString(undefined,{month:"long",year:"numeric"});let g=document.getElementById("days");g.innerHTML="";let first=new Date(current.getFullYear(),current.getMonth(),1),off=first.getDay(),total=new Date(current.getFullYear(),current.getMonth()+1,0).getDate();for(let i=0;i<off;i++){let e=document.createElement("div");e.className="day empty";g.appendChild(e)}let now=new Date();now.setHours(0,0,0,0);for(let n=1;n<=total;n++){let d=new Date(current.getFullYear(),current.getMonth(),n),c=document.createElement("div");c.className="day";if(d.getTime()===now.getTime())c.classList.add("todayDate");if(allowed(d))c.innerHTML='<div class="num">'+n+'</div><div class="native">'+nativeName(d)+'</div>';else c.style.visibility="hidden";g.appendChild(c)}document.getElementById("month").value=current.getFullYear()+"-"+current.getMonth()}
+function move(x){let n=new Date(current.getFullYear(),current.getMonth()+x,1),min=new Date(2026,7,1),max=new Date(2056,7,1);if(n>=min&&n<=max){current=n;render()}}
+function pick(){let [y,m]=document.getElementById("month").value.split("-").map(Number);current=new Date(y,m,1);render()}
+function today(){let d=new Date();d.setHours(0,0,0,0);current=d<START?new Date(2026,7,1):d>END?new Date(2056,7,1):new Date(d.getFullYear(),d.getMonth(),1);render()} function autoRefresh(){let d=new Date();d.setHours(0,0,0,0);if(d>=START&&d<=END){let m=new Date(d.getFullYear(),d.getMonth(),1);if(current.getFullYear()!=m.getFullYear()||current.getMonth()!=m.getMonth())today();else render()}} setInterval(autoRefresh,60000); document.addEventListener("visibilitychange",()=>{if(!document.hidden)autoRefresh()});
+setup();render();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js");
+</script></body></html>
