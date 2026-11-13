@@ -1,6 +1,6 @@
 // sw.js — caches the app shell so ScanEditor opens fully offline.
 // Bump CACHE whenever you upload a new index.html so users get the update.
-const CACHE = 'scaneditor-v2';
+const CACHE = 'calendar-v2';
 const SHELL = [
   './',
   './index.html',
